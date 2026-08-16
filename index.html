@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Game Tembak Jenis Kata</title>
+  <style>
+    body { margin: 0; background: #0f172a; color: #fff; font-family: sans-serif; display: flex; justify-content: center; align-items: center; height: 100vh; overflow: hidden; }
+    #game-container { position: relative; width: 100%; max-width: 480px; height: 95vh; display: flex; flex-direction: column; background: #1e293b; border-radius: 12px; overflow: hidden; box-shadow: 0 10px 25px rgba(0,0,0,0.5); }
+    #score-board { position: absolute; top: 12px; left: 12px; font-size: 16px; font-weight: bold; background: rgba(0,0,0,0.6); padding: 6px 14px; border-radius: 20px; border: 1px solid #475569; }
+    canvas { flex-grow: 1; width: 100%; background: #090d16; }
+    .controls { display: grid; grid-template-columns: repeat(5, 1fr); gap: 4px; padding: 8px; background: #0f172a; }
+    button { background: #3b82f6; color: white; border: none; padding: 10px 2px; font-size: 10px; font-weight: bold; border-radius: 6px; cursor: pointer; transition: 0.1s; }
+    button:active { transform: scale(0.92); background: #1d4ed8; }
+  </style>
+</head>
+<body>
+
+<div id="game-container">
+  <div id="score-board">Skor: <span id="score">0</span></div>
+  <canvas id="canvas"></canvas>
+  <div class="controls" id="buttons"></div>
+</div>
+
+<script>
+  const canvas = document.getElementById('canvas');
+  const ctx = canvas.getContext('2d');
+  const scoreEl = document.getElementById('score');
+  const buttonsDiv = document.getElementById('buttons');
+
+  canvas.width = 480;
+  canvas.height = 600;
+
+  const wordTypes = ['Nomina', 'Verba', 'Adjektiva', 'Adverbia', 'Pronomina', 'Numeralia', 'Preposisi', 'Konjungsi', 'Interjeksi', 'Artikula'];
+
+  const dictionary = [
+    { word: "makan", type: "Verba" },
+    { word: "berlari", type: "Verba" },
+    { word: "meja", type: "Nomina" },
+    { word: "kucing", type: "Nomina" },
+    { word: "cantik", type: "Adjektiva" },
+    { word: "cepat", type: "Adjektiva" },
+    { word: "sangat", type: "Adverbia" },
+    { word: "mereka", type: "Pronomina" },
+    { word: "tiga", type: "Numeralia" },
+    { word: "di", type: "Preposisi" },
+    { word: "dan", type: "Konjungsi" },
+    { word: "amboi", type: "Interjeksi" },
+    { word: "sang", type: "Artikula" }
+  ];
+
+  let score = 0;
+  let currentWord = null;
+  let bullets = [];
+  let particles = [];
+
+  wordTypes.forEach(type => {
+    const btn = document.createElement('button');
+    btn.innerText = type;
+    btn.onclick = () => fire(type);
+    buttonsDiv.appendChild(btn);
+  });
+
+  function spawnWord() {
+    const item = dictionary[Math.floor(Math.random() * dictionary.length)];
+    currentWord = { text: item.word, type: item.type, x: canvas.width / 2, y: 30, speed: 1.2 };
+  }
+
+  function fire(type) {
+    if (!currentWord) return;
+    bullets.push({ x: canvas.width / 2, y: canvas.height - 20, targetType: type, speed: 14 });
+  }
+
+  function explode(x, y) {
+    for (let i = 0; i < 25; i++) {
+      particles.push({
+        x, y,
+        vx: (Math.random() - 0.5) * 10,
+        vy: (Math.random() - 0.5) * 10,
+        life: 1,
+        color: `hsl(${Math.random() * 360}, 100%, 60%)`
+      });
+    }
+  }
+
+  function loop() {
+    ctx.fillStyle = '#090d16';
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+    // Partikel Efek Ledakan
+    for (let i = particles.length - 1; i >= 0; i--) {
+      let p = particles[i];
+      p.x += p.vx; p.y += p.vy; p.life -= 0.04;
+      ctx.fillStyle = p.color;
+      ctx.globalAlpha = Math.max(0, p.life);
+      ctx.beginPath(); ctx.arc(p.x, p.y, 4, 0, Math.PI * 2); ctx.fill();
+      if (p.life <= 0) particles.splice(i, 1);
+    }
+    ctx.globalAlpha = 1;
+
+    // Kata Turun
+    if (currentWord) {
+      currentWord.y += currentWord.speed;
+      ctx.fillStyle = '#f59e0b';
+      ctx.font = 'bold 26px sans-serif';
+      ctx.textAlign = 'center';
+      ctx.fillText(currentWord.text, currentWord.x, currentWord.y);
+
+      if (currentWord.y > canvas.height - 20) spawnWord();
+    }
+
+    // Peluru Tembakan
+    for (let i = bullets.length - 1; i >= 0; i--) {
+      let b = bullets[i];
+      b.y -= b.speed;
+      ctx.fillStyle = '#ef4444';
+      ctx.beginPath(); ctx.arc(b.x, b.y, 6, 0, Math.PI * 2); ctx.fill();
+
+      if (currentWord && b.y <= currentWord.y) {
+        if (b.targetType === currentWord.type) {
+          score += 10;
+          explode(currentWord.x, currentWord.y);
+          spawnWord();
+        } else {
+          score = Math.max(0, score - 5);
+        }
+        scoreEl.innerText = score;
+        bullets.splice(i, 1);
+      }
+    }
+    requestAnimationFrame(loop);
+  }
+
+  spawnWord();
+  loop();
+</script>
+</body>
+</html>
