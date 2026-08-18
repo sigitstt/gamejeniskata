@@ -877,7 +877,7 @@ class GameApp {
       this.ctx.font = 'bold 16px sans-serif';
       this.ctx.textAlign = 'center';
       this.ctx.textBaseline = 'middle';
-      this.ctx.fillText(this.snake.text, this.snake.x, this.snake.y - 35);
+      this.ctx.fillText(this.snake.text, this.snake.x, this.snake.y + 35);
 
       if (this.snake.y > this.canvas.height - 15) {
         this.loseLife("Ular tidak tertembak!");
