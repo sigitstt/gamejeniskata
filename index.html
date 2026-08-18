@@ -261,7 +261,7 @@
   <!-- SCREEN 1: FORM IDENTITAS SISWA -->
   <div id="screen-identity" class="screen">
     <div class="form-header">
-      <h1 id="title-app">TEMBAK9 ULAR KATA ⚙️</h1>
+      <h1 id="title-app">TEMBAK ULAR KATA ⚙️</h1>
       <p id="title-sub">Ketuk judul 5x cepat untuk Pengaturan Guru</p>
     </div>
 
@@ -410,7 +410,7 @@ class AudioEngine {
     osc.type = 'sawtooth';
     osc.frequency.setValueAtTime(600, this.ctx.currentTime);
     osc.frequency.exponentialRampToValueAtTime(100, this.ctx.currentTime + 0.12);
-    gain.gain.setValueAtTime(0.2, this.ctx.currentTime);
+    gain.gain.setValueAtTime(0.8, this.ctx.currentTime);
     gain.gain.exponentialRampToValueAtTime(0.01, this.ctx.currentTime + 0.12);
     osc.connect(gain); gain.connect(this.ctx.destination);
     osc.start(); osc.stop(this.ctx.currentTime + 0.12);
@@ -423,7 +423,7 @@ class AudioEngine {
     osc.type = 'triangle';
     osc.frequency.setValueAtTime(160, this.ctx.currentTime);
     osc.frequency.exponentialRampToValueAtTime(40, this.ctx.currentTime + 0.2);
-    gain.gain.setValueAtTime(0.4, this.ctx.currentTime);
+    gain.gain.setValueAtTime(0.8, this.ctx.currentTime);
     gain.gain.exponentialRampToValueAtTime(0.01, this.ctx.currentTime + 0.2);
     osc.connect(gain); gain.connect(this.ctx.destination);
     osc.start(); osc.stop(this.ctx.currentTime + 0.2);
@@ -436,7 +436,7 @@ class AudioEngine {
     osc.type = 'square';
     osc.frequency.setValueAtTime(150, this.ctx.currentTime);
     osc.frequency.setValueAtTime(100, this.ctx.currentTime + 0.1);
-    gain.gain.setValueAtTime(0.25, this.ctx.currentTime);
+    gain.gain.setValueAtTime(0.8, this.ctx.currentTime);
     gain.gain.exponentialRampToValueAtTime(0.01, this.ctx.currentTime + 0.25);
     osc.connect(gain); gain.connect(this.ctx.destination);
     osc.start(); osc.stop(this.ctx.currentTime + 0.25);
@@ -449,7 +449,7 @@ class AudioEngine {
       const gain = this.ctx.createGain();
       osc.type = 'sawtooth';
       osc.frequency.setValueAtTime(freq, this.ctx.currentTime + (idx * 0.12));
-      gain.gain.setValueAtTime(0.25, this.ctx.currentTime + (idx * 0.12));
+      gain.gain.setValueAtTime(0.8, this.ctx.currentTime + (idx * 0.12));
       gain.gain.exponentialRampToValueAtTime(0.01, this.ctx.currentTime + (idx * 0.12) + 0.11);
       osc.connect(gain); gain.connect(this.ctx.destination);
       osc.start(this.ctx.currentTime + (idx * 0.12));
