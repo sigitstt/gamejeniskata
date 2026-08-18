@@ -1,0 +1,981 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, maximum-scale=1.0">
+  <title>Tembak Ular Kata - EduGame</title>
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      user-select: none;
+      -webkit-user-select: none;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    }
+
+    html, body {
+      width: 100%;
+      height: 100%;
+      height: 100dvh;
+      overflow: hidden;
+      background-color: #0b0f19;
+      color: #ffffff;
+    }
+
+    #app-wrapper {
+      position: relative;
+      width: 100%;
+      height: 100%;
+      height: 100dvh;
+      max-width: 480px;
+      margin: 0 auto;
+      display: flex;
+      flex-direction: column;
+      background: #111827;
+    }
+
+    .screen {
+      position: absolute;
+      top: 0; left: 0;
+      width: 100%; height: 100%;
+      display: flex;
+      flex-direction: column;
+      z-index: 10;
+      background: #111827;
+      padding: 16px;
+      overflow-y: auto;
+    }
+
+    .hidden { display: none !important; }
+
+    /* Form Identitas */
+    .form-header {
+      text-align: center;
+      margin-top: 5px;
+      margin-bottom: 15px;
+    }
+
+    .form-header h1 {
+      font-size: 22px;
+      color: #3b82f6;
+      cursor: pointer;
+      touch-action: manipulation;
+      padding: 5px;
+    }
+
+    .form-header p {
+      font-size: 11px;
+      color: #9ca3af;
+      margin-top: 2px;
+    }
+
+    .input-group { margin-bottom: 12px; }
+    .input-group label {
+      display: block;
+      font-size: 12px;
+      font-weight: 600;
+      margin-bottom: 4px;
+      color: #d1d5db;
+    }
+
+    .input-group input, .input-group select {
+      width: 100%;
+      padding: 10px;
+      border-radius: 8px;
+      border: 1px solid #374151;
+      background: #1f2937;
+      color: #fff;
+      font-size: 14px;
+      outline: none;
+    }
+
+    .btn-primary {
+      width: 100%;
+      padding: 14px;
+      background: #2563eb;
+      color: white;
+      border: none;
+      border-radius: 8px;
+      font-size: 16px;
+      font-weight: bold;
+      cursor: pointer;
+      margin-top: 5px;
+      touch-action: manipulation;
+    }
+
+    .btn-primary:active { background: #1d4ed8; }
+
+    /* LAYOUT GAMEPLAY */
+    #game-header {
+      flex-shrink: 0;
+      height: 42px;
+      background: #1f2937;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 0 10px;
+      border-bottom: 2px solid #374151;
+      z-index: 5;
+    }
+
+    .stat-box { font-size: 12px; font-weight: bold; }
+    .stat-value { color: #f59e0b; }
+
+    #canvas-container {
+      flex: 1 1 0%;
+      height: 0;
+      position: relative;
+      background: #090d16;
+    }
+
+    canvas {
+      display: block;
+      width: 100%;
+      height: 100%;
+    }
+
+    /* Panel 10 Tombol Tembak (DIPERBESAR) */
+    #controls-panel {
+      flex-shrink: 0;
+      padding: 8px;
+      background: #0f172a;
+      border-top: 2px solid #374151;
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      gap: 6px;
+      z-index: 5;
+    }
+
+    .btn-word-type {
+      background: linear-gradient(180deg, #2563eb 0%, #1d4ed8 100%);
+      color: #ffffff;
+      border: 1px solid #60a5fa;
+      height: 50px;
+      font-size: 12px;
+      font-weight: bold;
+      border-radius: 8px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      touch-action: manipulation;
+      word-break: break-word;
+      line-height: 1.15;
+      text-align: center;
+      padding: 2px 4px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.3);
+    }
+
+    .btn-word-type:active {
+      transform: scale(0.94);
+      background: #3b82f6;
+    }
+
+    /* Modal Pengaturan Guru */
+    .modal-overlay {
+      position: fixed;
+      top: 0; left: 0; width: 100vw; height: 100vh;
+      background: rgba(0,0,0,0.85);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      z-index: 100;
+    }
+
+    .modal-content {
+      background: #1f2937;
+      width: 90%;
+      max-width: 400px;
+      padding: 18px;
+      border-radius: 12px;
+      border: 1px solid #4b5563;
+      max-height: 90vh;
+      overflow-y: auto;
+    }
+
+    .modal-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 12px;
+    }
+
+    .modal-header h2 { font-size: 16px; color: #f59e0b; }
+    .close-btn { background: none; border: none; color: #9ca3af; font-size: 22px; cursor: pointer; }
+
+    /* Hasil akhir */
+    .result-card {
+      background: #1f2937;
+      padding: 20px;
+      border-radius: 10px;
+      text-align: center;
+      margin-top: 15px;
+    }
+    .result-score { font-size: 42px; color: #10b981; font-weight: bold; margin: 10px 0; }
+
+    /* Indikator pengiriman di hasil */
+    #sheet-sync-status {
+      font-size: 11px;
+      margin-top: 8px;
+      font-weight: 600;
+    }
+
+    /* Toast Notification */
+    #toast {
+      position: fixed;
+      bottom: 70px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: rgba(0, 0, 0, 0.9);
+      color: #f59e0b;
+      padding: 8px 16px;
+      border-radius: 20px;
+      font-size: 12px;
+      z-index: 200;
+      pointer-events: none;
+      border: 1px solid #f59e0b;
+    }
+  </style>
+</head>
+<body>
+
+<div id="app-wrapper">
+
+  <div id="toast" class="hidden"></div>
+
+  <!-- SCREEN 1: FORM IDENTITAS SISWA -->
+  <div id="screen-identity" class="screen">
+    <div class="form-header">
+      <h1 id="title-app">TEMBAK ULAR KATA ⚙️</h1>
+      <p id="title-sub">Ketuk judul 5x cepat untuk Pengaturan Guru</p>
+    </div>
+
+    <form id="identity-form">
+      <div class="input-group">
+        <label for="student-absen">No. Absen</label>
+        <select id="student-absen" required>
+          <option value="">-- Pilih No. Absen --</option>
+        </select>
+      </div>
+
+      <div class="input-group">
+        <label for="student-name">Nama Lengkap</label>
+        <input type="text" id="student-name" required placeholder="Masukkan nama lengkap">
+      </div>
+
+      <div class="input-group">
+        <label for="student-class">Kelas</label>
+        <select id="student-class" required>
+          <option value="">-- Pilih Kelas --</option>
+        </select>
+      </div>
+
+      <div class="input-group">
+        <label for="test-type">Jenis Tes</label>
+        <select id="test-type" required>
+          <option value="Formatif">Formatif</option>
+          <option value="Sumatif">Sumatif (Pakai Token)</option>
+        </select>
+      </div>
+
+      <div class="input-group hidden" id="token-group">
+        <label for="test-token">Token Sumatif</label>
+        <input type="text" id="test-token" placeholder="Masukkan token tes">
+      </div>
+
+      <button type="submit" class="btn-primary">Mulai Permainan</button>
+    </form>
+  </div>
+
+  <!-- SCREEN 2: GAMEPLAY -->
+  <div id="screen-game" class="screen hidden" style="padding:0; overflow:hidden;">
+    <div id="game-header">
+      <div class="stat-box">Waktu: <span id="disp-timer" class="stat-value">0s</span></div>
+      <div class="stat-box">Nyawa: <span id="disp-lives" class="stat-value">❤️❤️❤️</span></div>
+      <div class="stat-box">Soal: <span id="disp-progress" class="stat-value">0/10</span></div>
+      <div class="stat-box">Skor: <span id="disp-score" class="stat-value">0</span></div>
+    </div>
+
+    <div id="canvas-container">
+      <canvas id="gameCanvas"></canvas>
+    </div>
+
+    <div id="controls-panel">
+      <button class="btn-word-type" data-type="Aran (Benda)">Aran (Benda)</button>
+      <button class="btn-word-type" data-type="Kriya (Kerja)">Kriya (Kerja)</button>
+      <button class="btn-word-type" data-type="Kahanan (Sifat)">Kahanan (Sifat)</button>
+      <button class="btn-word-type" data-type="Katrangan (Keterangan)">Katrangan (Keterangan)</button>
+      <button class="btn-word-type" data-type="Sesulih (Ganti)">Sesulih (Ganti)</button>
+      <button class="btn-word-type" data-type="Wilangan (Bilangan)">Wilangan (Bilangan)</button>
+      <button class="btn-word-type" data-type="Ancer-ancer (Depan)">Ancer-ancer (Depan)</button>
+      <button class="btn-word-type" data-type="Sambung (Sambung)">Sambung (Sambung)</button>
+      <button class="btn-word-type" data-type="Panguwuh (Seru)">Panguwuh (Seru)</button>
+      <button class="btn-word-type" data-type="Panyilah (Sandang)">Panyilah (Sandang)</button>
+    </div>
+  </div>
+
+  <!-- SCREEN 3: GAME OVER / HASIL -->
+  <div id="screen-result" class="screen hidden">
+    <div class="form-header">
+      <h1 id="result-title">PERMAINAN SELESAI</h1>
+      <p id="result-status">Terima kasih telah menyelesaikan tes!</p>
+    </div>
+
+    <div class="result-card">
+      <p>Skor Akhir Anda</p>
+      <div class="result-score" id="final-score">0</div>
+      <p id="result-detail" style="font-size:12px; color:#9ca3af; margin-bottom:10px;"></p>
+      <div id="sheet-sync-status" class="hidden"></div>
+      <button id="btn-restart" class="btn-primary" style="margin-top: 15px;">Kembali ke Depan</button>
+    </div>
+  </div>
+
+  <!-- MODAL: PENGATURAN GURU -->
+  <div id="modal-settings" class="modal-overlay hidden">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h2>Pengaturan Guru</h2>
+        <button class="close-btn" id="btn-close-settings">&times;</button>
+      </div>
+
+      <form id="settings-form">
+        <div class="input-group">
+          <label for="cfg-lives">Jumlah Nyawa (Cell N2)</label>
+          <input type="number" id="cfg-lives" min="1" max="10" required>
+        </div>
+
+        <div class="input-group">
+          <label for="cfg-questions">Jumlah Soal (Cell N3)</label>
+          <input type="number" id="cfg-questions" min="1" max="50" required>
+        </div>
+
+        <div class="input-group">
+          <label for="cfg-time">Batas Waktu Total / Detik (Cell N4)</label>
+          <input type="number" id="cfg-time" min="10" max="600" required>
+        </div>
+
+        <div class="input-group">
+          <label for="cfg-token">Token Sumatif (Cell N5)</label>
+          <input type="text" id="cfg-token" required>
+        </div>
+
+        <button type="submit" class="btn-primary">Simpan & Sync Ke Sheets</button>
+      </form>
+    </div>
+  </div>
+
+</div>
+
+<script>
+// =========================================================================
+// URL GOOGLE APPS SCRIPT
+// =========================================================================
+const GOOGLE_SHEET_URL = "https://script.google.com/macros/s/AKfycbxMlvcUsvpa5J4HXzCrOUbRBebjSZ3PfDjGv674rBCCsz6LFPvEiGqX_QLyT0HwSOUhNw/exec";
+// =========================================================================
+
+class AudioEngine {
+  constructor() { this.ctx = null; }
+  init() {
+    if (!this.ctx) {
+      const AudioCtx = window.AudioContext || window.webkitAudioContext;
+      this.ctx = new AudioCtx();
+    }
+    if (this.ctx.state === 'suspended') this.ctx.resume();
+  }
+
+  playShoot() {
+    if (!this.ctx) return;
+    const osc = this.ctx.createOscillator();
+    const gain = this.ctx.createGain();
+    osc.type = 'sawtooth';
+    osc.frequency.setValueAtTime(600, this.ctx.currentTime);
+    osc.frequency.exponentialRampToValueAtTime(100, this.ctx.currentTime + 0.12);
+    gain.gain.setValueAtTime(0.8, this.ctx.currentTime);
+    gain.gain.exponentialRampToValueAtTime(0.01, this.ctx.currentTime + 0.12);
+    osc.connect(gain); gain.connect(this.ctx.destination);
+    osc.start(); osc.stop(this.ctx.currentTime + 0.12);
+  }
+
+  playExplode() {
+    if (!this.ctx) return;
+    const osc = this.ctx.createOscillator();
+    const gain = this.ctx.createGain();
+    osc.type = 'triangle';
+    osc.frequency.setValueAtTime(160, this.ctx.currentTime);
+    osc.frequency.exponentialRampToValueAtTime(40, this.ctx.currentTime + 0.2);
+    gain.gain.setValueAtTime(0.8, this.ctx.currentTime);
+    gain.gain.exponentialRampToValueAtTime(0.01, this.ctx.currentTime + 0.2);
+    osc.connect(gain); gain.connect(this.ctx.destination);
+    osc.start(); osc.stop(this.ctx.currentTime + 0.2);
+  }
+
+  playWrong() {
+    if (!this.ctx) return;
+    const osc = this.ctx.createOscillator();
+    const gain = this.ctx.createGain();
+    osc.type = 'square';
+    osc.frequency.setValueAtTime(150, this.ctx.currentTime);
+    osc.frequency.setValueAtTime(100, this.ctx.currentTime + 0.1);
+    gain.gain.setValueAtTime(0.8, this.ctx.currentTime);
+    gain.gain.exponentialRampToValueAtTime(0.01, this.ctx.currentTime + 0.25);
+    osc.connect(gain); gain.connect(this.ctx.destination);
+    osc.start(); osc.stop(this.ctx.currentTime + 0.25);
+  }
+
+  playGameOver() {
+    if (!this.ctx) return;
+    [200, 160, 130, 100].forEach((freq, idx) => {
+      const osc = this.ctx.createOscillator();
+      const gain = this.ctx.createGain();
+      osc.type = 'sawtooth';
+      osc.frequency.setValueAtTime(freq, this.ctx.currentTime + (idx * 0.12));
+      gain.gain.setValueAtTime(0.8, this.ctx.currentTime + (idx * 0.12));
+      gain.gain.exponentialRampToValueAtTime(0.01, this.ctx.currentTime + (idx * 0.12) + 0.11);
+      osc.connect(gain); gain.connect(this.ctx.destination);
+      osc.start(this.ctx.currentTime + (idx * 0.12));
+      osc.stop(this.ctx.currentTime + (idx * 0.12) + 0.11);
+    });
+  }
+}
+
+// BANK SOAL DEFAULT (DIPERBAIKI JENIS KATANYA)
+const DEFAULT_WORD_BANK = [
+  { word: "mangan", type: "Kriya (Kerja)" }, 
+  { word: "omah", type: "Aran (Benda)" },
+  { word: "apik", type: "Kahanan (Sifat)" }, 
+  { word: "saiki", type: "Katrangan (Keterangan)" },
+  { word: "dheweke", type: "Sesulih (Ganti)" }, 
+  { word: "papat", type: "Wilangan (Bilangan)" },
+  { word: "marang", type: "Ancer-ancer (Depan)" }, 
+  { word: "nanging", type: "Sambung (Sambung)" },
+  { word: "aduh", type: "Panguwuh (Seru)" }, 
+  { word: "sang", type: "Panyilah (Sandang)" }
+];
+
+class GameApp {
+  constructor() {
+    this.audio = new AudioEngine();
+    
+    this.config = {
+      maxLives: 3,
+      totalQuestions: 10,
+      timeLimit: 60,
+      tokenSumatif: "GURU123"
+    };
+
+    this.student = { absen: "", name: "", class: "", testType: "Formatif" };
+    this.wordBank = [...DEFAULT_WORD_BANK];
+    this.score = 0;
+    this.lives = 3;
+    this.questionCount = 0;
+    this.timer = 60;
+    this.timerInterval = null;
+    this.gameRunning = false;
+
+    this.canvas = document.getElementById('gameCanvas');
+    this.ctx = this.canvas.getContext('2d');
+    
+    this.snake = null;
+    this.bullets = [];
+    this.particles = [];
+    
+    this.titleTapCount = 0;
+    this.tapTimer = null;
+
+    this.populateDropdowns();
+    this.loadLocalConfig();
+    this.initDOMEvents();
+    this.resizeCanvas();
+    window.addEventListener('resize', () => this.resizeCanvas());
+
+    // PENGAMBILAN DATA DI BACKGROUND SEJAK AWAL (Non-blocking)
+    this.prefetchInitData();
+  }
+
+  populateDropdowns() {
+    const selectAbsen = document.getElementById('student-absen');
+    for (let i = 1; i <= 40; i++) {
+      const opt = document.createElement('option');
+      opt.value = i; opt.textContent = i;
+      selectAbsen.appendChild(opt);
+    }
+
+    const selectClass = document.getElementById('student-class');
+    ['7', '8', '9'].forEach(lvl => {
+      ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I'].forEach(ltr => {
+        const opt = document.createElement('option');
+        opt.value = `${lvl}${ltr}`; opt.textContent = `${lvl}${ltr}`;
+        selectClass.appendChild(opt);
+      });
+    });
+  }
+
+  async prefetchInitData() {
+    if (!GOOGLE_SHEET_URL || GOOGLE_SHEET_URL.includes("YOUR_DEPLOYMENT_ID_HERE")) return;
+    try {
+      const response = await fetch(`${GOOGLE_SHEET_URL}?action=getInitData`);
+      const data = await response.json();
+      
+      if (data.status === 'success') {
+        if (data.config) {
+          this.config.maxLives = data.config.maxLives || this.config.maxLives;
+          this.config.totalQuestions = data.config.totalQuestions || this.config.totalQuestions;
+          this.config.timeLimit = data.config.timeLimit || this.config.timeLimit;
+          this.config.tokenSumatif = data.config.tokenSumatif || this.config.tokenSumatif;
+        }
+
+        if (data.words && data.words.length > 0) {
+          this.wordBank = data.words.map(item => ({
+            word: String(item.word).trim(),
+            type: String(item.type).trim()
+          }));
+        }
+      }
+    } catch (err) {
+      console.warn("Pre-fetch latar belakang gagal, memakai bank soal bawaan:", err);
+    }
+  }
+
+  showToast(msg) {
+    const t = document.getElementById('toast');
+    t.innerText = msg;
+    t.classList.remove('hidden');
+    clearTimeout(this.toastTimer);
+    this.toastTimer = setTimeout(() => t.classList.add('hidden'), 1800);
+  }
+
+  loadLocalConfig() {
+    const saved = localStorage.getItem('snake_game_config');
+    if (saved) {
+      try { this.config = { ...this.config, ...JSON.parse(saved) }; } catch (e) {}
+    }
+  }
+
+  saveLocalConfig() {
+    localStorage.setItem('snake_game_config', JSON.stringify(this.config));
+  }
+
+  resizeCanvas() {
+    const container = document.getElementById('canvas-container');
+    if (container) {
+      this.canvas.width = container.clientWidth;
+      this.canvas.height = container.clientHeight;
+    }
+  }
+
+  initDOMEvents() {
+    const titleApp = document.getElementById('title-app');
+    const handleMultiTap = (e) => {
+      e.preventDefault();
+      this.titleTapCount++;
+      if (this.tapTimer) clearTimeout(this.tapTimer);
+
+      if (this.titleTapCount >= 5) {
+        this.titleTapCount = 0;
+        this.openSettingsModal();
+      } else {
+        this.showToast(`Ketuk ${5 - this.titleTapCount}x lagi untuk Pengaturan`);
+        this.tapTimer = setTimeout(() => { this.titleTapCount = 0; }, 1800);
+      }
+    };
+
+    titleApp.addEventListener('click', handleMultiTap);
+
+    document.getElementById('identity-form').addEventListener('submit', (e) => {
+      e.preventDefault();
+      this.handleFormSubmit();
+    });
+
+    document.getElementById('test-type').addEventListener('change', (e) => {
+      const tokenGroup = document.getElementById('token-group');
+      if (e.target.value === 'Sumatif') {
+        tokenGroup.classList.remove('hidden');
+        document.getElementById('test-token').required = true;
+      } else {
+        tokenGroup.classList.add('hidden');
+        document.getElementById('test-token').required = false;
+      }
+    });
+
+    document.getElementById('btn-close-settings').addEventListener('click', () => {
+      document.getElementById('modal-settings').classList.add('hidden');
+    });
+
+    document.getElementById('settings-form').addEventListener('submit', (e) => {
+      e.preventDefault();
+      this.saveSettings();
+    });
+
+    document.querySelectorAll('.btn-word-type').forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        const type = e.target.getAttribute('data-type');
+        this.fireBullet(type);
+      });
+    });
+
+    document.getElementById('btn-restart').addEventListener('click', () => {
+      this.showScreen('screen-identity');
+    });
+  }
+
+  openSettingsModal() {
+    document.getElementById('cfg-lives').value = this.config.maxLives;
+    document.getElementById('cfg-questions').value = this.config.totalQuestions;
+    document.getElementById('cfg-time').value = this.config.timeLimit;
+    document.getElementById('cfg-token').value = this.config.tokenSumatif;
+    document.getElementById('modal-settings').classList.remove('hidden');
+  }
+
+  async saveSettings() {
+    this.config.maxLives = parseInt(document.getElementById('cfg-lives').value);
+    this.config.totalQuestions = parseInt(document.getElementById('cfg-questions').value);
+    this.config.timeLimit = parseInt(document.getElementById('cfg-time').value);
+    this.config.tokenSumatif = document.getElementById('cfg-token').value;
+
+    this.saveLocalConfig();
+
+    if (GOOGLE_SHEET_URL && !GOOGLE_SHEET_URL.includes("YOUR_DEPLOYMENT_ID_HERE")) {
+      try {
+        fetch(GOOGLE_SHEET_URL, {
+          method: 'POST',
+          mode: 'no-cors',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ action: 'saveSettings', settings: this.config })
+        });
+        alert("Pengaturan tersimpan & dikirim ke Google Sheets!");
+        document.getElementById('modal-settings').classList.add('hidden');
+      } catch (err) {
+        alert("Gagal sinkronisasi ke Sheets: " + err.message);
+      }
+    } else {
+      alert("Pengaturan diset secara lokal!");
+      document.getElementById('modal-settings').classList.add('hidden');
+    }
+  }
+
+  showScreen(screenId) {
+    document.querySelectorAll('.screen').forEach(s => s.classList.add('hidden'));
+    document.getElementById(screenId).classList.remove('hidden');
+  }
+
+  handleFormSubmit() {
+    this.audio.init();
+
+    this.student.absen = document.getElementById('student-absen').value;
+    this.student.name = document.getElementById('student-name').value;
+    this.student.class = document.getElementById('student-class').value;
+    this.student.testType = document.getElementById('test-type').value;
+
+    if (this.student.testType === 'Sumatif') {
+      const inputToken = document.getElementById('test-token').value;
+      if (inputToken !== this.config.tokenSumatif) {
+        alert("Token Sumatif salah! Hubungi Guru Anda.");
+        return;
+      }
+    }
+
+    // Langsung mulai tanpa menunda/loading
+    this.startGame();
+  }
+
+  startGame() {
+    this.score = 0;
+    this.lives = this.config.maxLives;
+    this.questionCount = 0;
+    this.timer = this.config.timeLimit;
+    this.bullets = [];
+    this.particles = [];
+
+    this.updateHUD();
+    this.showScreen('screen-game');
+    this.resizeCanvas();
+
+    this.spawnSnake();
+
+    this.gameRunning = true;
+    clearInterval(this.timerInterval);
+    this.timerInterval = setInterval(() => {
+      this.timer--;
+      this.updateHUD();
+      if (this.timer <= 0) {
+        this.endGame("Waktu Habis!", false);
+      }
+    }, 1000);
+
+    requestAnimationFrame(() => this.gameLoop());
+  }
+
+  updateHUD() {
+    document.getElementById('disp-timer').innerText = `${this.timer}s`;
+    document.getElementById('disp-score').innerText = this.score;
+    document.getElementById('disp-progress').innerText = `${this.questionCount}/${this.config.totalQuestions}`;
+    document.getElementById('disp-lives').innerText = "❤️".repeat(Math.max(0, this.lives));
+  }
+
+  spawnSnake() {
+    if (this.questionCount >= this.config.totalQuestions) {
+      this.endGame("Selamat! Seluruh soal telah berhasil diselesaikan.", true);
+      return;
+    }
+
+    this.questionCount++;
+    this.updateHUD();
+
+    const randomItem = this.wordBank[Math.floor(Math.random() * this.wordBank.length)];
+    
+    this.snake = {
+      text: String(randomItem.word).trim(),
+      type: String(randomItem.type).trim(),
+      x: this.canvas.width / 2,
+      y: -30,
+      speed: 1.0 + Math.random() * 0.3,
+      waveAngle: 0,
+      radius: 24,
+      bodySegments: []
+    };
+
+    for (let i = 0; i < 6; i++) {
+      this.snake.bodySegments.push({ x: this.snake.x, y: this.snake.y - (i * 18) });
+    }
+  }
+
+  fireBullet(type) {
+    if (!this.gameRunning || !this.snake) return;
+    this.audio.playShoot();
+    this.bullets.push({
+      x: this.canvas.width / 2,
+      y: this.canvas.height - 10,
+      targetType: String(type).trim(),
+      speed: 14
+    });
+  }
+
+  createExplosion(x, y, color) {
+    for (let i = 0; i < 20; i++) {
+      this.particles.push({
+        x, y,
+        vx: (Math.random() - 0.5) * 8,
+        vy: (Math.random() - 0.5) * 8,
+        life: 1.0,
+        color: color || `hsl(${Math.random() * 360}, 100%, 50%)`
+      });
+    }
+  }
+
+  loseLife(reason) {
+    if (!this.gameRunning || !this.snake) return;
+    this.lives--;
+    this.audio.playWrong();
+    this.updateHUD();
+    this.createExplosion(this.snake.x, this.snake.y, '#ef4444');
+
+    if (this.lives <= 0) {
+      this.endGame("Nyawa Anda Habis!", false);
+    } else {
+      this.spawnSnake();
+    }
+  }
+
+  // SYSTEM SMART MATCHING (Mencegah salah tebak akibat beda penulisan kata)
+  isTypeMatch(userChoice, snakeType) {
+    if (!userChoice || !snakeType) return false;
+    const u = String(userChoice).toLowerCase().trim();
+    const s = String(snakeType).toLowerCase().trim();
+
+    if (u === s) return true;
+
+    // Ekstrak kata kunci huruf saja
+    const getWords = (str) => str.match(/[a-z]+/g) || [];
+    const uWords = getWords(u);
+    const sWords = getWords(s);
+
+    // Cek kecocokan minimal 1 kata kunci utama
+    for (let w of uWords) {
+      if (w.length > 2 && sWords.includes(w)) return true;
+    }
+
+    return false;
+  }
+
+  gameLoop() {
+    if (!this.gameRunning) return;
+
+    this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+
+    // Partikel Efek
+    for (let i = this.particles.length - 1; i >= 0; i--) {
+      let p = this.particles[i];
+      p.x += p.vx; p.y += p.vy; p.life -= 0.04;
+      this.ctx.fillStyle = p.color;
+      this.ctx.globalAlpha = Math.max(0, p.life);
+      this.ctx.beginPath();
+      this.ctx.arc(p.x, p.y, 4, 0, Math.PI * 2);
+      this.ctx.fill();
+      if (p.life <= 0) this.particles.splice(i, 1);
+    }
+    this.ctx.globalAlpha = 1.0;
+
+    // Pergerakan Ular
+    if (this.snake) {
+      this.snake.y += this.snake.speed;
+      this.snake.waveAngle += 0.08;
+      this.snake.x = this.canvas.width / 2;
+
+      // Segmen Badan Ular
+      for (let i = 0; i < this.snake.bodySegments.length; i++) {
+        let seg = this.snake.bodySegments[i];
+        seg.y = this.snake.y - (i + 1) * 18;
+        seg.x = this.snake.x + Math.sin(this.snake.waveAngle - i * 0.4) * (15 + i * 3);
+
+        this.ctx.fillStyle = `hsl(${120 + i * 12}, 75%, 45%)`;
+        this.ctx.beginPath();
+        this.ctx.arc(seg.x, seg.y, 16 - (i * 1.5), 0, Math.PI * 2);
+        this.ctx.fill();
+      }
+
+      // Kepala Ular
+      this.ctx.fillStyle = '#10b981';
+      this.ctx.beginPath();
+      this.ctx.arc(this.snake.x, this.snake.y, this.snake.radius, 0, Math.PI * 2);
+      this.ctx.fill();
+      this.ctx.strokeStyle = '#059669';
+      this.ctx.lineWidth = 3;
+      this.ctx.stroke();
+
+      // Mata Ular
+      this.ctx.fillStyle = '#ffffff';
+      this.ctx.beginPath();
+      this.ctx.arc(this.snake.x - 7, this.snake.y + 2, 4, 0, Math.PI * 2);
+      this.ctx.arc(this.snake.x + 7, this.snake.y + 2, 4, 0, Math.PI * 2);
+      this.ctx.fill();
+      this.ctx.fillStyle = '#000';
+      this.ctx.beginPath();
+      this.ctx.arc(this.snake.x - 7, this.snake.y + 3, 2, 0, Math.PI * 2);
+      this.ctx.arc(this.snake.x + 7, this.snake.y + 3, 2, 0, Math.PI * 2);
+      this.ctx.fill();
+
+      // TEKS SOAL (DIPERBESAR & TERBACA JELAS DI BAWAH KEPALA ULAR)
+      this.ctx.font = 'bold 22px sans-serif';
+      this.ctx.textAlign = 'center';
+      this.ctx.textBaseline = 'middle';
+      
+      // Stroke Hitam Tebal
+      this.ctx.strokeStyle = '#000000';
+      this.ctx.lineWidth = 4;
+      this.ctx.strokeText(this.snake.text, this.snake.x, this.snake.y + 45);
+
+      // Warna Isi Teks Kuning Terang
+      this.ctx.fillStyle = '#fde047';
+      this.ctx.fillText(this.snake.text, this.snake.x, this.snake.y + 45);
+
+      // Jika Ular Lolos ke Bawah
+      if (this.snake.y > this.canvas.height - 10) {
+        this.loseLife("Ular tidak tertembak!");
+      }
+    }
+
+    // Peluru
+    for (let i = this.bullets.length - 1; i >= 0; i--) {
+      let b = this.bullets[i];
+      b.y -= b.speed;
+
+      this.ctx.fillStyle = '#f59e0b';
+      this.ctx.beginPath();
+      this.ctx.arc(b.x, b.y, 6, 0, Math.PI * 2);
+      this.ctx.fill();
+
+      if (this.snake) {
+        let dx = b.x - this.snake.x;
+        let dy = b.y - this.snake.y;
+        let dist = Math.sqrt(dx * dx + dy * dy);
+
+        if (dist < this.snake.radius + 6) {
+          if (this.isTypeMatch(b.targetType, this.snake.type)) {
+            this.score += 10;
+            this.audio.playExplode();
+            this.createExplosion(this.snake.x, this.snake.y, '#10b981');
+            this.spawnSnake();
+          } else {
+            this.loseLife("Tebakan jenis kata salah!");
+          }
+          this.bullets.splice(i, 1);
+          continue;
+        }
+      }
+
+      if (b.y < 0) this.bullets.splice(i, 1);
+    }
+
+    requestAnimationFrame(() => this.gameLoop());
+  }
+
+  endGame(reason, isSuccess = false) {
+    this.gameRunning = false;
+    clearInterval(this.timerInterval);
+    this.audio.playGameOver();
+
+    const titleElem = document.getElementById('result-title');
+    if (titleElem) {
+      titleElem.innerText = isSuccess ? "🎉 PERMAINAN SELESAI" : "💥 GAME OVER";
+      titleElem.style.color = isSuccess ? "#10b981" : "#ef4444";
+    }
+
+    document.getElementById('result-status').innerText = reason;
+    document.getElementById('final-score').innerText = this.score;
+    document.getElementById('result-detail').innerText = 
+      `Siswa: ${this.student.name} (${this.student.absen}) | Kelas: ${this.student.class} | Tes: ${this.student.testType}`;
+
+    this.showScreen('screen-result');
+
+    // KIRIM NILAI DI BACKGROUND (TANPA MEMBUAT LAG/DELAY LAYAR)
+    this.sendResultInBackground();
+  }
+
+  async sendResultInBackground() {
+    if (!GOOGLE_SHEET_URL || GOOGLE_SHEET_URL.includes("YOUR_DEPLOYMENT_ID_HERE")) return;
+
+    const statusBadge = document.getElementById('sheet-sync-status');
+    if (statusBadge) {
+      statusBadge.innerText = "⏳ Mengirim nilai ke Google Sheets...";
+      statusBadge.style.color = "#f59e0b";
+      statusBadge.classList.remove('hidden');
+    }
+
+    try {
+      await fetch(GOOGLE_SHEET_URL, {
+        method: 'POST',
+        mode: 'no-cors',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          action: 'saveResult',
+          result: {
+            absen: this.student.absen,
+            nama: this.student.name,
+            kelas: this.student.class,
+            jenisTes: this.student.testType,
+            skor: this.score,
+            waktuSisa: this.timer
+          }
+        })
+      });
+
+      if (statusBadge) {
+        statusBadge.innerText = `✓ Nilai berhasil tersimpan di tab ${this.student.testType}!`;
+        statusBadge.style.color = "#10b981";
+      }
+    } catch (e) {
+      if (statusBadge) {
+        statusBadge.innerText = "⚠️ Catatan: Gagal mengirim nilai otomatis.";
+        statusBadge.style.color = "#ef4444";
+      }
+    }
+  }
+}
+
+window.addEventListener('load', () => {
+  window.gameApp = new GameApp();
+});
+</script>
+</body>
+</html>
